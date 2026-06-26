@@ -1,0 +1,6 @@
+node_modules/
+dist/
+vite-dev*.log
+.agents/
+.claude/
+.DS_Store
