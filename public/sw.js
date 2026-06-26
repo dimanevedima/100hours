@@ -1,13 +1,14 @@
-const CACHE_NAME = '100-hours-v1'
+const CACHE_NAME = '100-hours-v2'
+const SCOPE = self.registration.scope
 const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icon.svg',
-  '/icon-180.png',
-  '/icon-192.png',
-  '/icon-512.png',
-]
+  '',
+  'index.html',
+  'manifest.webmanifest',
+  'icon.svg',
+  'icon-180.png',
+  'icon-192.png',
+  'icon-512.png',
+].map(path => new URL(path, SCOPE).toString())
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -35,6 +36,6 @@ self.addEventListener('fetch', event => {
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy))
         return response
       })
-      .catch(() => caches.match(event.request).then(cached => cached ?? caches.match('/index.html'))),
+      .catch(() => caches.match(event.request).then(cached => cached ?? caches.match(new URL('index.html', SCOPE).toString()))),
   )
 })
