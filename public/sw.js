@@ -1,4 +1,4 @@
-const CACHE_NAME = '100-hours-v2'
+const CACHE_NAME = '100-hours-v3'
 const SCOPE = self.registration.scope
 const APP_SHELL = [
   '',
