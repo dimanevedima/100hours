@@ -31,7 +31,7 @@ export function ProgressHeader() {
         <div className="flex items-baseline justify-between gap-3">
           <span className="font-mono-num text-lg font-semibold text-accent">{formatHours(totalMinutes)}</span>
           <span className="font-mono-num text-sm text-muted">
-            {challenge.totalGoalHours}h · {pct}%
+            {challenge.totalGoalHours}h / {pct}%
           </span>
         </div>
         <div className="h-4 overflow-hidden rounded-full border border-border bg-bg">

@@ -32,16 +32,16 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg text-text">
       <header className="sticky top-0 z-40 border-b border-border bg-header-glass backdrop-blur">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-3 px-4">
+        <div className="mx-auto flex min-h-14 w-full max-w-5xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-2">
           <div className="font-mono text-sm font-bold text-text">100 Hours</div>
 
-          <nav className="flex items-center gap-1" aria-label="Main navigation">
+          <nav className="order-3 flex w-full items-center gap-1 min-[430px]:order-none min-[430px]:w-auto" aria-label="Main navigation">
             {NAV_ITEMS.map(item => (
               <button
                 key={item.id}
                 onClick={() => setView(item.id)}
                 aria-current={view === item.id ? 'page' : undefined}
-                className={`flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent
+                className={`flex h-10 flex-1 items-center justify-center gap-2 rounded-lg px-2 text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent min-[430px]:flex-none min-[430px]:px-3
                   ${view === item.id
                     ? 'bg-accent/10 text-accent'
                     : 'text-muted hover:bg-surface2 hover:text-text'
