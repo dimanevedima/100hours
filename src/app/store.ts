@@ -320,11 +320,26 @@ export const useStore = create<Store>((set, get) => {
         const existingByDate = new Map(state.days.map(d => [d.date, d]))
         newDays = Array.from({ length: dc }, (_, i) => {
           const date = addDays(sd, i)
-          return existingByDate.get(date) ?? {
+          const existing = existingByDate.get(date)
+          const goalMinutes = dg * 60
+          const completedMinutes = Math.min(existing?.completedMinutes ?? 0, goalMinutes)
+
+          if (existing) {
+            return {
+              ...existing,
+              date,
+              dayNumber: i + 1,
+              goalMinutes,
+              completedMinutes,
+              status: getDayStatus(completedMinutes, goalMinutes, date),
+            }
+          }
+
+          return {
             id: nanoid(),
             date,
             dayNumber: i + 1,
-            goalMinutes: dg * 60,
+            goalMinutes,
             completedMinutes: 0,
             sessions: [],
             status: 'empty' as const,
@@ -332,7 +347,13 @@ export const useStore = create<Store>((set, get) => {
         })
       }
 
-      const next = { ...state, settings: newSettings, days: newDays, challenge: newChallenge }
+      const next = {
+        ...state,
+        settings: newSettings,
+        days: newDays,
+        challenge: newChallenge,
+        ...recalculateProgress(newDays),
+      }
       set(next)
       saveState(next)
     },

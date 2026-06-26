@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { LayoutGrid, Moon, Sun, Trophy } from 'lucide-react'
+import { LayoutGrid, Moon, Settings, Sun, Trophy } from 'lucide-react'
 import { AchievementsPanel } from '../components/AchievementsPanel'
 import { ChallengeCalendar } from '../components/ChallengeCalendar'
 import { ProgressHeader } from '../components/ProgressHeader'
+import { SettingsPanel } from '../components/SettingsPanel'
 import { useStore } from './store'
 import type { ActiveView } from './types'
 
 const NAV_ITEMS: { id: ActiveView; label: string; icon: React.ReactNode }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutGrid className="h-4 w-4" /> },
   { id: 'achievements', label: 'Awards', icon: <Trophy className="h-4 w-4" /> },
+  { id: 'settings', label: 'Settings', icon: <Settings className="h-4 w-4" /> },
 ]
 
 export default function App() {
@@ -69,6 +71,7 @@ export default function App() {
           </>
         )}
         {view === 'achievements' && <AchievementsPanel />}
+        {view === 'settings' && <SettingsPanel />}
       </main>
     </div>
   )
