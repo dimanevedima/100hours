@@ -10,13 +10,10 @@ export function ChallengeCalendar() {
 
   return (
     <>
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-muted uppercase tracking-wider">20-Day Sprint</h2>
-        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {days.map(day => (
             <DayCell key={day.id} day={day} onClick={() => setSelectedDay(day)} />
           ))}
-        </div>
       </div>
 
       {selectedDay && (

@@ -97,53 +97,47 @@ function buildInitialState(): AppState {
 }
 
 function getDayStatus(completedMinutes: number, goalMinutes: number, date: string): DayProgress['status'] {
-  const today = todayISO()
-  if (completedMinutes === 0) {
-    if (date < today) return 'skipped'
-    return 'empty'
-  }
-  if (completedMinutes < goalMinutes * 0.5) return 'started'
+  if (completedMinutes === 0) return 'empty'
   if (completedMinutes < goalMinutes) return 'partial'
-  if (completedMinutes >= goalMinutes * 1.0) {
-    if (completedMinutes > goalMinutes) return 'overcompleted'
-    return 'completed'
-  }
-  return 'partial'
+  return 'completed'
 }
 
 function recalculateProgress(days: DayProgress[]): Pick<AppState, 'totalPoints' | 'totalCoins' | 'streak' | 'longestStreak'> {
-  const totals = days.reduce(
-    (acc, day) => {
-      for (const session of day.sessions) {
-        acc.points += calculateSessionPoints(session)
-        acc.coins += calculateSessionCoins(session)
-      }
-
-      const dayBonus = calculateDayBonus(day)
-      acc.points += dayBonus.points
-      acc.coins += dayBonus.coins
-
-      return acc
-    },
-    { points: 0, coins: 0 },
-  )
-
+  const totalMinutes = days.reduce((sum, day) => sum + day.completedMinutes, 0)
+  const completedDays = days.filter(day => day.completedMinutes >= day.goalMinutes).length
   const { current, longest } = calculateStreak(days)
-  let streakBonus = 0
-  if (longest >= 3) streakBonus += 100
-  if (longest >= 7) streakBonus += 250
 
   return {
-    totalPoints: totals.points + streakBonus,
-    totalCoins: totals.coins,
+    totalPoints: totalMinutes,
+    totalCoins: Math.floor(totalMinutes / 15) * 5 + completedDays * 50,
     streak: current,
     longestStreak: longest,
+  }
+}
+
+function migrateState(state: AppState): AppState {
+  const days = state.days.map(day => {
+    const sessionMinutes = day.sessions.reduce((sum, session) => sum + session.actualMinutes, 0)
+    const completedMinutes = Math.min(day.goalMinutes, Math.max(day.completedMinutes, sessionMinutes))
+
+    return {
+      ...day,
+      completedMinutes,
+      status: getDayStatus(completedMinutes, day.goalMinutes, day.date),
+    }
+  })
+
+  return {
+    ...state,
+    days,
+    ...recalculateProgress(days),
   }
 }
 
 interface StoreActions {
   addSession: (dayId: string, session: Omit<FocusSession, 'id'>) => string[]
   addQuickTime: (dayId: string, minutes: number, mode: WorkMode) => void
+  setDayMinutes: (dayId: string, minutes: number) => void
   deleteSession: (dayId: string, sessionId: string) => void
   updateDayNote: (dayId: string, note: string) => void
   toggleReleaseItem: (section: keyof ReleaseBoard, itemId: string) => void
@@ -158,7 +152,7 @@ type Store = AppState & StoreActions
 
 export const useStore = create<Store>((set, get) => {
   const persisted = loadState()
-  const initial = persisted ?? buildInitialState()
+  const initial = persisted ? migrateState(persisted) : buildInitialState()
 
   return {
     ...initial,
@@ -233,6 +227,30 @@ export const useStore = create<Store>((set, get) => {
         usedNoise: false,
         note: `Quick log: ${minutes} min`,
       })
+    },
+
+    setDayMinutes: (dayId, minutes) => {
+      const state = get()
+      const dayIdx = state.days.findIndex(d => d.id === dayId)
+      if (dayIdx === -1) return
+
+      const day = state.days[dayIdx]
+      const completedMinutes = Math.max(0, Math.min(day.goalMinutes, Math.round(minutes / 15) * 15))
+      const updatedDay: DayProgress = {
+        ...day,
+        completedMinutes,
+        sessions: [],
+        status: getDayStatus(completedMinutes, day.goalMinutes, day.date),
+      }
+      const days = state.days.map((d, i) => i === dayIdx ? updatedDay : d)
+      const next = {
+        ...state,
+        days,
+        ...recalculateProgress(days),
+      }
+
+      set(next)
+      saveState(next)
     },
 
     deleteSession: (dayId, sessionId) => {

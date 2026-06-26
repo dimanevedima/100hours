@@ -96,4 +96,4 @@ export interface AppState {
   longestStreak: number
 }
 
-export type ActiveView = 'dashboard' | 'timer' | 'stats' | 'release' | 'achievements' | 'settings'
+export type ActiveView = 'dashboard' | 'achievements'
